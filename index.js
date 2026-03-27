@@ -1,0 +1,44 @@
+require('dotenv').config();
+//tools
+const express = require('express');// expone todo el aplicativo
+//const swaggerUi = require('swagger-ui-express');
+//const swaggerJsdoc = require('swagger-jsdoc');
+const connectDB = require('./src/config/database');// para entrar ./
+const registerRoutes = require('./src/routes/register');
+const loginRoutes = require("./src/routes/login");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());// comunicacion
+
+//main routes
+app.use("/api/register", registerRoutes);
+app.use("/api", loginRoutes);
+
+//Connection to connectBD
+connectDB();
+/*const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Health Track',
+      version: '1.0.0',
+      description: 'Documentación Health Track',
+    },
+    servers: [
+      {
+        url: 'http://localhost:3000',
+      },
+    ],
+  },
+  apis: ['./index.js','./src/routes/auth.js','./src/routes/reportes.js'],
+};*/
+
+/*const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-healthTrack', swaggerUi.serve, swaggerUi.setup(swaggerDocs));*/
+
+app.listen(PORT, () =>{
+    console.log(`Port connection running in: http://localhost:${PORT}`);
+    //console.log(`Documentación disponible en http://localhost:${PORT}/api-healthTrack`);
+});
