@@ -6,6 +6,7 @@ const express = require('express');// expone todo el aplicativo
 const connectDB = require('./src/config/database');// para entrar ./
 const registerRoutes = require('./src/routes/register');
 const loginRoutes = require("./src/routes/login");
+const appointmentsRoutes = require("./src/routes/appointments");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ app.use(express.json());// comunicacion
 //main routes
 app.use("/api/register", registerRoutes);
 app.use("/api", loginRoutes);
+app.use("/api/appointments",appointmentsRoutes);
 
 //Connection to connectBD
 connectDB();
