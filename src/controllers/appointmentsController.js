@@ -180,6 +180,80 @@ exports.cancelAppointment = async (req,res) => {
           }
         };
     
+        // Obtener todas las citas canceladas
+        exports.getCancelAppointments = async (req, res) => {
+          try {
+            const { role, id: usuarioId } = req.usuario;
+            if (!['0', '1', '2', '3'].includes(String(role))) return res.status(403).json({ msg: 'Acceso denegado' });
+
+            const filter = { status: 'cancelada' };
+            if (String(role) === '1') filter.medico_id = usuarioId;
+            if (String(role) === '3') filter.paciente_id = usuarioId;
+
+            const citas = await Appointment.find(filter)
+              .populate('paciente_id', 'username email')
+              .populate('medico_id', 'username email')
+              .sort({ fecha_hora: 1 });
+
+            return res.status(200).json(citas);
+          } catch (error) {
+            res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
+          }
+        };
+
+        // Obtener todas las citas pendientes a confirmar
+        exports.getPendingAppointments = async (req, res) => {
+          try {
+            const { role, id: usuarioId } = req.usuario;
+            if (!['0', '1', '2', '3'].includes(String(role))) return res.status(403).json({ msg: 'Acceso denegado' });
+
+            const filter = { status: 'pendiente' };
+            if (String(role) === '1') filter.medico_id = usuarioId;
+            if (String(role) === '3') filter.paciente_id = usuarioId;
+
+            const citas = await Appointment.find(filter)
+              .populate('paciente_id', 'username email')
+              .populate('medico_id', 'username email')
+              .sort({ fecha_hora: 1 });
+
+            return res.status(200).json(citas);
+          } catch (error) {
+            res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
+          }
+        };
+
+        // Obtener todas las citas pendientes de cancelación (si se implementa flag `pendiente_aprobacion` se usará esa)
+        exports.getPendingCancellations = async (req, res) => {
+          try {
+            const { role, id: usuarioId } = req.usuario;
+            if (!['0', '1', '2', '3'].includes(String(role))) return res.status(403).json({ msg: 'Acceso denegado' });
+
+            // Preferir la señal `pendiente_aprobacion` si existe en los documentos
+            const filterFlag = { status: 'pendiente_aprobacion' };
+            if (String(role) === '1') filterFlag.medico_id = usuarioId;
+            if (String(role) === '3') filterFlag.paciente_id = usuarioId;
+
+            let citas = await Appointment.find(filterFlag)
+              .populate('paciente_id', 'username email')
+              .populate('medico_id', 'username email')
+              .sort({ fecha_hora: 1 });
+
+            // Fallback a status 'pendiente' si no hay documentos con el flag
+            if (!citas || citas.length === 0) {
+              const fallback = { status: 'pendiente' };
+              if (String(role) === '1') fallback.medico_id = usuarioId;
+              if (String(role) === '3') fallback.paciente_id = usuarioId;
+              citas = await Appointment.find(fallback)
+                .populate('paciente_id', 'username email')
+                .populate('medico_id', 'username email')
+                .sort({ fecha_hora: 1 });
+            }
+
+            return res.status(200).json(citas);
+          } catch (error) {
+            res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
+          }
+        };
     exports.getSpecificAppointments = async (req, res) => {
       try {
         const { role, id: usuarioId } = req.usuario;
