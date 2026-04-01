@@ -98,7 +98,7 @@ exports.registerAdmin = async (req, res) => {
             return res.status(403).json({ msg: "Codigo de verificacion incorrecto"});
         }
 
-        const existeAdmin = await Admin.findOne({ email: "jefe@healthTrack.com" });
+        const existeAdmin = await Admin.findOne({ email: email });
         if (existeAdmin) return res.status(409).json({ msg: "El usuario ya existe" });
 
         const salt = await bcrypt.genSalt(10);
