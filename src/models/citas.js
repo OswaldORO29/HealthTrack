@@ -17,8 +17,21 @@ const citaSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pendiente', 'confirmada', 'cancelada', 'completada'],
+        enum: ['pendiente', 'confirmada','pendiente_aprobacion','cancelada', 'completada'],
         default: 'pendiente'
+    },
+    cancelacion: {
+        solicitadoPor: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Usuarios' 
+        },
+        motivo: { type: String },
+        fechaSolicitud: { type: Date },
+        aprobadoPor: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Usuarios' 
+        },
+        fechaAprobacion: { type: Date }
     },
     motivo: {
         type: String,
@@ -29,4 +42,5 @@ const citaSchema = new mongoose.Schema({
         default: Date.now
     }
 });
+
 module.exports = mongoose.model('Citas',citaSchema);
