@@ -14,6 +14,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());// comunicacion
 
 //main routes
+
+app.use('/api/appointments', appointmentsRoutes);
 app.use("/api/register", registerRoutes);
 app.use("/api", loginRoutes);
 app.use("/api/appointments",appointmentsRoutes);
