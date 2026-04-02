@@ -8,6 +8,15 @@ exports.registerPaciente = async (req,res) => {
     try {
         const{username,email,password} =req.body;
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ msg: 'Por favor, ingresa un correo electrónico válido'});
+        }
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ msg: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número'});
+        }
+
         const usuario = await Paciente.findOne({email});
 
          if(usuario){
@@ -31,14 +40,21 @@ exports.registerPaciente = async (req,res) => {
 }
 exports.registerPersonal = async (req, res) => {
     try {
-        const CORREO_AUTORIZADO = "jefe@healthtrack.com".toLowerCase(); 
-        const emailUsuarioToken = req.usuario.email.toLowerCase(); 
-
-        if (!req.usuario || emailUsuarioToken !== CORREO_AUTORIZADO) {
-            return res.status(403).json({ msg: "Acceso denegado"});
+        
+        if (!req.usuario || req.usuario.role !== 0) {
+            return res.status(403).json({ msg: "Acceso denegado. Solo el administrador puede realizar esta acción" });
         }
 
         const { username, password, email, role, especialidad, cedulaInterna,consultorio } = req.body;
+
+         if (!email.toLowerCase().endsWith("@hospitalhealth.com")) {
+            return res.status(400).json({ msg: "El correo debe pertenecer al dominio concretado" });
+        }
+
+         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ msg: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número'});
+        }
 
         if (![1, 2].includes(role)) {
             return res.status(400).json({ msg: "Rol no válido"});
@@ -93,6 +109,15 @@ exports.registerPersonal = async (req, res) => {
 exports.registerAdmin = async (req, res) => {
     try {
         const { username, email, password, adminSecret } = req.body;
+
+        if (!email.toLowerCase().endsWith("@healthtrack.com")) {
+            return res.status(400).json({ msg: "El correo debe pertenecer al dominio concretado" });
+        }
+
+         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ msg: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número'});
+        }
 
         if (adminSecret !== process.env.ADMIN_REGISTRATION_SECRET) {
             return res.status(403).json({ msg: "Codigo de verificacion incorrecto"});
