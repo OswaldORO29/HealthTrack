@@ -1,3 +1,4 @@
+
 const cron = require('node-cron');
 const Paciente = require("../models/paciente");
 const Appointment = require("../models/citas");
@@ -80,6 +81,98 @@ cron.schedule('* * * * *', async () => {
     console.error('Error en el cron job:', error);
   }
 });
+exports.updateAppointments = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paciente_id, medico_id, fecha_hora, status, motivo } = req.body;
+    const { role } = req.usuario;
+
+    if (role > 2) {
+      return res.status(403).json({ msg: 'Acceso denegado' });
+    }
+
+    const cita = await Appointment.findById(id);
+
+    if (!cita) {
+      return res.status(404).json({ msg: 'Cita no encontrada' });
+    }
+
+    // Validar paciente
+    if (paciente_id) {
+      const pacienteExiste = await Paciente.findById(paciente_id);
+      if (!pacienteExiste) {
+        return res.status(404).json({ msg: 'El paciente no existe' });
+      }
+      cita.paciente_id = paciente_id;
+    }
+
+    // Validar médico
+    if (medico_id) {
+      const medicoExiste = await Medico.findById(medico_id);
+      if (!medicoExiste) {
+        return res.status(404).json({ msg: 'El médico no existe' });
+      }
+      cita.medico_id = medico_id;
+    }
+
+    // Determinar valores finales
+    const nuevoMedico = medico_id || cita.medico_id;
+    const nuevaFecha = fecha_hora || cita.fecha_hora;
+
+    // Validar conflicto (UNA sola vez)
+    const conflicto = await Appointment.findOne({
+      medico_id: nuevoMedico,
+      fecha_hora: nuevaFecha,
+      status: { $ne: 'cancelada' },
+      _id: { $ne: id }
+    });
+
+    if (conflicto) {
+      return res.status(400).json({
+        msg: 'El médico ya tiene una cita en esa fecha y hora'
+      });
+    }
+
+    // Actualizar fecha
+    if (fecha_hora) {
+      cita.fecha_hora = fecha_hora;
+    }
+
+    // Validar estado
+    if (status) {
+      const estadosValidos = [
+        'pendiente',
+        'confirmada',
+        'pendiente_aprobacion',
+        'cancelada',
+        'completada'
+      ];
+
+      if (!estadosValidos.includes(status)) {
+        return res.status(400).json({ msg: 'Estado no válido' });
+      }
+
+      cita.status = status;
+    }
+
+    if (motivo !== undefined) {
+      cita.motivo = motivo;
+    }
+
+    await cita.save();
+
+    return res.json({
+      msg: 'Cita actualizada',
+      cita
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      error: 'Error en el servidor',
+      message: error.message || error
+    });
+  }
+};
 
 exports.requestCancellation = async (req, res) => {
   try {
