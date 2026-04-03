@@ -38,10 +38,21 @@ exports.login = async (req,res) => {
         jwt.sign(
             payload, 
             process.env.JWT_SECRET, 
-            { expiresIn: '30d' },
+            {expiresIn: '30d'},
             (err,token) =>{ 
             if(err) throw err;
-            res.json({token});
+            res.status(200).json({
+                    token: token,
+                    usuario: {
+                        _id: usuario._id,
+                        email: usuario.email,
+                        username: usuario.username,
+                        role: usuario.role, 
+                        especialidad: usuario.especialidad || null,
+                        cedulaInterna: usuario.cedulaInterna || null,
+                        consultorio: usuario.consultorio || null
+                    }
+                });
         });
 
     } catch (error) {
