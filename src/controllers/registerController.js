@@ -31,11 +31,16 @@ exports.registerPaciente = async (req,res) => {
 }
 exports.registerPersonal = async (req, res) => {
     try {
-        const CORREO_AUTORIZADO = "jefe@healthtrack.com".toLowerCase(); 
-        const emailUsuarioToken = req.usuario.email.toLowerCase(); 
+        const CORREO_AUTORIZADO = "jefe@healthtrack.com".toLowerCase();
+        const emailUsuarioToken = String(req.usuario?.email || '').toLowerCase();
+        const roleUsuarioToken = String(req.usuario?.role || '');
 
-        if (!req.usuario || emailUsuarioToken !== CORREO_AUTORIZADO) {
-            return res.status(403).json({ msg: "Acceso denegado"});
+        // Permitir si el token pertenece al admin por role (0) o al correo autorizado
+        const esAdminPorCorreo = emailUsuarioToken === CORREO_AUTORIZADO;
+        const esAdminPorRole = roleUsuarioToken === '0' || roleUsuarioToken === '0';
+
+        if (!req.usuario || !(esAdminPorCorreo || esAdminPorRole)) {
+            return res.status(403).json({ msg: "Acceso denegado: solo administradores" });
         }
 
         const { username, password, email, role, especialidad, cedulaInterna,consultorio } = req.body;

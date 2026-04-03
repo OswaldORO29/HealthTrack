@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const Paciente = require("../models/paciente");
 const Appointment = require("../models/citas");
+const Medico = require("../models/medico");
 
 exports.createAppointments = async (req, res) => {
     try {
@@ -134,7 +135,9 @@ exports.cancelAppointment = async (req,res) => {
     }catch(error){
         res.status(500).json({error: "Error en el servidor",message: error.message});
     }
-     exports.getAllAppointments = async (req, res) => {
+  };
+
+  exports.getAllAppointments = async (req, res) => {
           try {
             const { role, id: usuarioId } = req.usuario;
             if (!['0', '1', '2', '3'].includes(String(role))) {
@@ -311,5 +314,4 @@ exports.cancelAppointment = async (req,res) => {
       } catch (error) {
         res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
       }
-    };   
-}
+    }; 

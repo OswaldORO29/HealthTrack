@@ -2,19 +2,31 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = (req,res, next) =>{
-   const token = req.header('Authorization')?.replace('Bearer ', ''); 
+   // Log temporal para depuración: muestra el header Authorization recibido
+   const authHeader = req.header('Authorization');
+   console.log('DEBUG auth - headers.Authorization:', authHeader);
 
-   if(!token){
-        return res.status(401).json({msg:'No hay token,permiso denegado'});
+   if (!authHeader) {
+        return res.status(401).json({ msg: 'No hay token, permiso denegado' });
    }
+
+   const parts = authHeader.split(' ');
+   if (parts.length !== 2 || parts[0] !== 'Bearer') {
+        return res.status(401).json({ msg: 'Formato de token inválido. Use: Authorization: Bearer <token>' });
+   }
+
+   const token = parts[1];
+   if (!token) {
+        return res.status(401).json({ msg: 'No hay token, permiso denegado' });
+   }
+
    try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          req.usuario = decoded.usuario
-          next();
+        req.usuario = decoded.usuario;
+        next();
    } catch (error) {
-          console.error("DETALLE DEL FALLO:", error.message);
-        console.error("Error de JWT:", error.message);
-        res.status(401).json({msg:'Token no valido'});
+        console.error('DETALLE DEL FALLO:', error.message);
+        res.status(401).json({ msg: 'Token no valido' });
    }
 
 };

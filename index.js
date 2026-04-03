@@ -7,6 +7,7 @@ const connectDB = require('./src/config/database');// para entrar ./
 const registerRoutes = require('./src/routes/register');
 const loginRoutes = require("./src/routes/login");
 const appointmentsRoutes = require("./src/routes/appointments");
+const medicosRoutes = require("./src/routes/medicos");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,7 +19,10 @@ app.use(express.json());// comunicacion
 app.use('/api/appointments', appointmentsRoutes);
 app.use("/api/register", registerRoutes);
 app.use("/api", loginRoutes);
-app.use("/api/appointments",appointmentsRoutes);
+app.use('/api/auth', loginRoutes);
+app.use('/api/auth/register', registerRoutes);
+app.use('/api/medicos', medicosRoutes);
+// appointments routes already mounted above
 
 //Connection to connectBD
 connectDB();
