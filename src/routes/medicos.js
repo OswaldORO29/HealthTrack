@@ -32,6 +32,6 @@ const medicosController = require("../controllers/medicosController");
  *                 especialidad: "Cardiología"
  *                 email: "dr.garcia@hospitalhealth.com"
  */
-router.get('/getAllMedicos', medicosController.getAllMedicos);
+router.get("/getAllMedicos", medicosController.getAllMedicos);
 
 module.exports = router;

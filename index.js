@@ -113,6 +113,7 @@ app.use('/api-healthTrack', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use('/api/appointments', appointmentsRoutes);
 app.use("/api/register", registerRoutes);
 app.use("/api", loginRoutes);
+app.use("/api/medicos", medicosRoutes);
 
 //Connection to connectBD
 connectDB();
