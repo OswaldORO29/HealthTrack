@@ -17,13 +17,6 @@ app.use(express.json());// comunicacion
 app.use('/api/appointments', appointmentsRoutes);
 app.use("/api/register", registerRoutes);
 app.use("/api", loginRoutes);
-<<<<<<< HEAD
-app.use('/api/auth', loginRoutes);
-app.use('/api/auth/register', registerRoutes);
-app.use('/api/medicos', medicosRoutes);
-// appointments routes already mounted above
-=======
->>>>>>> 1cec272e4b9d8f6d84ca1a3f6baf2bb14a05d5de
 
 //Connection to connectBD
 connectDB();
