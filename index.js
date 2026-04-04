@@ -8,6 +8,7 @@ const registerRoutes = require('./src/routes/register');
 const loginRoutes = require("./src/routes/login");
 const appointmentsRoutes = require("./src/routes/appointments");
 const medicosRoutes = require("./src/routes/medicos");
+const pacientRoutes = require("./src/routes/pacient");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -114,6 +115,7 @@ app.use('/api/appointments', appointmentsRoutes);
 app.use("/api/register", registerRoutes);
 app.use("/api", loginRoutes);
 app.use("/api/medicos", medicosRoutes);
+app.use("/api/pacientes", pacientRoutes);
 
 //Connection to connectBD
 connectDB();
