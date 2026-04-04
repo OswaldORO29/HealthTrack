@@ -6,12 +6,6 @@ const Medico = require("../models/medico");
 
 exports.createAppointments = async (req, res) => {
   try {
-    const { role } = req.usuario;
-
-    if (role > 2) {
-      return res.status(403).json({ msg: 'Acceso denegado' });
-    }
-
     const { paciente_id, medico_id, fecha_hora, motivo, status } = req.body;
 
     const pacienteExiste = await Paciente.findById(paciente_id);
