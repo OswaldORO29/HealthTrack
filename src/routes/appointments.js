@@ -154,7 +154,7 @@ router.patch("/cancelAppointment/:id",auth,createAppointmentsController.cancelAp
  *                 pacienteId: "5f6a7b8c9d0e1f2a3b4c5d6e"
  *                 status: "confirmed"
  */
-router.get('/getAllAppointments', auth, (req, res, next) => require('../controllers/appointmentsController').getAllAppointments(req, res, next));
+router.get('/getAllAppointments', auth,createAppointmentsController.getAllAppointments);
 
 
 /**
@@ -194,7 +194,7 @@ router.get('/getAllAppointments', auth, (req, res, next) => require('../controll
  *               pacienteId: "5f6a7b8c9d0e1f2a3b4c5d6e"
  *               status: "confirmed"
  */
-router.get('/getSpecificAppointments/:id', auth, (req, res, next) => require('../controllers/appointmentsController').getSpecificAppointments(req, res, next));
+router.get('/getSpecificAppointments/:id', auth, createAppointmentsController.getSpecificAppointments);
 
 
 /**
@@ -220,7 +220,7 @@ router.get('/getSpecificAppointments/:id', auth, (req, res, next) => require('..
  *                 fecha: "2026-04-03T10:00:00Z"
  *                 status: "cancelled"
  */
-router.get('/getCancelAppointments', auth, (req, res, next) => require('../controllers/appointmentsController').getCancelAppointments(req, res, next));
+router.get('/getCancelAppointments', auth, createAppointmentsController.getCancelAppointments);
 
 
 /**
@@ -236,7 +236,7 @@ router.get('/getCancelAppointments', auth, (req, res, next) => require('../contr
  *       200:
  *         description: Citas pendientes
  */
-router.get('/getPendingAppointments', auth, (req, res, next) => require('../controllers/appointmentsController').getPendingAppointments(req, res, next));
+router.get('/getPendingAppointments', auth, createAppointmentsController.getPendingAppointments);
 
 
 /**
@@ -252,7 +252,7 @@ router.get('/getPendingAppointments', auth, (req, res, next) => require('../cont
  *       200:
  *         description: Solicitudes pendientes
  */
-router.get('/getPendingCancellations', auth, (req, res, next) => require('../controllers/appointmentsController').getPendingCancellations(req, res, next));
+router.get('/getPendingCancellations', auth, createAppointmentsController.getPendingCancellations);
 
 
 /**
