@@ -296,7 +296,7 @@ router.get('/getPendingCancellations', auth, createAppointmentsController.getPen
  *       200:
  *         description: Cita actualizada
  */
-router.put('/updateAppointments/:id', auth, createAppointmentsController.updateAppointments);
+router.patch('/updateAppointments/:id', auth, createAppointmentsController.updateAppointments);
 
 
 module.exports = router;
