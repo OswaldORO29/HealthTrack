@@ -2,7 +2,8 @@ const express = require("express"); //permitir sacar las apis al exterior
 const router = express.Router();
 
 const auth = require("../middlewares/auth");
-const createAppointmentsController = require("../controllers/appointmentsController");
+const appointmentsController = require("../controllers/appointmentsController");
+
 
 
 /**
@@ -32,7 +33,7 @@ const createAppointmentsController = require("../controllers/appointmentsControl
  *       201:
  *         description: Cita creada correctamente
  */
-router.post("/createAppointments",auth,createAppointmentsController.createAppointments);
+router.post("/createAppointments",auth,appointmentsController.createAppointments);
 
 
 /**
@@ -64,7 +65,7 @@ router.post("/createAppointments",auth,createAppointmentsController.createAppoin
  *       200:
  *         description: Estado actualizado
  */
-router.patch("/updateAppointmentStatus/:id",auth,createAppointmentsController.updateAppointmentStatus);
+router.patch("/updateAppointmentStatus/:id",auth,appointmentsController.updateAppointmentStatus);
 
 
 /**
@@ -96,7 +97,7 @@ router.patch("/updateAppointmentStatus/:id",auth,createAppointmentsController.up
  *       200:
  *         description: Solicitud enviada
  */
-router.patch("/requestCancellation/:id",auth,createAppointmentsController.requestCancellation);
+router.patch("/requestCancellation/:id",auth,appointmentsController.requestCancellation);
 
 
 /**
@@ -118,7 +119,7 @@ router.patch("/requestCancellation/:id",auth,createAppointmentsController.reques
  *       200:
  *         description: Cita cancelada
  */
-router.patch("/cancelAppointment/:id",auth,createAppointmentsController.cancelAppointment);
+router.patch("/cancelAppointment/:id",auth,appointmentsController.cancelAppointment);
 
 
 /**
@@ -154,7 +155,7 @@ router.patch("/cancelAppointment/:id",auth,createAppointmentsController.cancelAp
  *                 pacienteId: "5f6a7b8c9d0e1f2a3b4c5d6e"
  *                 status: "confirmed"
  */
-router.get('/getAllAppointments', auth,createAppointmentsController.getAllAppointments);
+router.get('/getAllAppointments', auth, (req, res, next) => require('../controllers/appointmentsController').getAllAppointments(req, res, next));
 
 
 /**
@@ -194,7 +195,7 @@ router.get('/getAllAppointments', auth,createAppointmentsController.getAllAppoin
  *               pacienteId: "5f6a7b8c9d0e1f2a3b4c5d6e"
  *               status: "confirmed"
  */
-router.get('/getSpecificAppointments/:id', auth, createAppointmentsController.getSpecificAppointments);
+router.get('/getSpecificAppointments/:id', auth, (req, res, next) => require('../controllers/appointmentsController').getSpecificAppointments(req, res, next));
 
 
 /**
@@ -220,7 +221,7 @@ router.get('/getSpecificAppointments/:id', auth, createAppointmentsController.ge
  *                 fecha: "2026-04-03T10:00:00Z"
  *                 status: "cancelled"
  */
-router.get('/getCancelAppointments', auth, createAppointmentsController.getCancelAppointments);
+router.get('/getCancelAppointments', auth, (req, res, next) => require('../controllers/appointmentsController').getCancelAppointments(req, res, next));
 
 
 /**
@@ -236,7 +237,7 @@ router.get('/getCancelAppointments', auth, createAppointmentsController.getCance
  *       200:
  *         description: Citas pendientes
  */
-router.get('/getPendingAppointments', auth, createAppointmentsController.getPendingAppointments);
+router.get('/getPendingAppointments', auth, (req, res, next) => require('../controllers/appointmentsController').getPendingAppointments(req, res, next));
 
 
 /**
@@ -252,7 +253,7 @@ router.get('/getPendingAppointments', auth, createAppointmentsController.getPend
  *       200:
  *         description: Solicitudes pendientes
  */
-router.get('/getPendingCancellations', auth, createAppointmentsController.getPendingCancellations);
+router.get('/getPendingCancellations', auth, (req, res, next) => require('../controllers/appointmentsController').getPendingCancellations(req, res, next));
 
 
 /**
@@ -296,7 +297,7 @@ router.get('/getPendingCancellations', auth, createAppointmentsController.getPen
  *       200:
  *         description: Cita actualizada
  */
-router.patch('/updateAppointments/:id', auth, createAppointmentsController.updateAppointments);
+router.put('/updateAppointments/:id', auth, appointmentsController.updateAppointments);
 
 
 module.exports = router;

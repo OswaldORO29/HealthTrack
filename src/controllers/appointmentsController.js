@@ -75,8 +75,6 @@ cron.schedule('* * * * *', async () => {
     console.error('Error en el cron job:', error);
   }
 });
-
-
 exports.updateAppointments = async (req, res) => {
   try {
     const { id } = req.params;
@@ -220,188 +218,202 @@ exports.cancelAppointment = async (req, res) => {
 
     await cita.save();
 
-    res.json({ msg: 'Cancelación hecha con éxito', cita });
-  } catch (error) {
-    res.status(500).json({ error: "Error en el servidor", message: error.message });
-    ;
-  }
+        res.json({msg: 'Cancelación hecha con éxito',cita });
+    } catch(error){
+        res.status(500).json({error: "Error en el servidor",message: error.message});
+    }
 };
 
 exports.getAllAppointments = async (req, res) => {
-    try {
-      const { role, id: usuarioId } = req.usuario;
+          try {
+            const { role, id: usuarioId } = req.usuario;
+            if (!['0', '1', '2', '3'].includes(String(role))) {
+              return res.status(403).json({ msg: 'Acceso denegado' });
+            }
+    
+            // Prepare filters per role
+            const baseFilters = {
+              pendiente_aprobacion: { status: 'pendiente_aprobacion' },
+              pendientes: { status: 'pendiente' },
+              canceladas: { status: 'cancelada' },
+              confirmadas: { status: 'confirmada' },
+              completadas: { status: 'completada' }
+            };
+    
+            // scope results: doctors see their own, patients see their own, assistants/admin see all
+            if (String(role) === '1') {
+              baseFilters.pendiente_aprobacion.medico_id = usuarioId;
+              baseFilters.pendientes.medico_id = usuarioId;
+              baseFilters.canceladas.medico_id = usuarioId;
+              baseFilters.confirmadas.medico_id = usuarioId;
+              baseFilters.completadas.medico_id = usuarioId;
+            } else if (String(role) === '3') {
+              baseFilters.pendiente_aprobacion.paciente_id = usuarioId;
+              baseFilters.pendientes.paciente_id = usuarioId;
+              baseFilters.canceladas.paciente_id = usuarioId;
+              baseFilters.confirmadas.paciente_id = usuarioId;
+              baseFilters.completadas.paciente_id = usuarioId;
+            }
+    
+            const [pendiente_aprobacion, pendientes, canceladas, confirmadas, completadas] = await Promise.all([
+              Appointment.find(baseFilters.pendiente_aprobacion)
+                .populate('paciente_id', 'username email')
+                .populate('medico_id', 'username email')
+                .sort({ fecha_hora: 1 }),
+              Appointment.find(baseFilters.pendientes)
+                .populate('paciente_id', 'username email')
+                .populate('medico_id', 'username email')
+                .sort({ fecha_hora: 1 }),
+              Appointment.find(baseFilters.canceladas)
+                .populate('paciente_id', 'username email')
+                .populate('medico_id', 'username email')
+                .sort({ fecha_hora: 1 }),
+              Appointment.find(baseFilters.confirmadas)
+                .populate('paciente_id', 'username email')
+                .populate('medico_id', 'username email')
+                .sort({ fecha_hora: 1 }),
+              Appointment.find(baseFilters.completadas)
+                .populate('paciente_id', 'username email')
+                .populate('medico_id', 'username email')
+                .sort({ fecha_hora: 1 })
+            ]);
+    
+            return res.status(200).json({ pendiente_aprobacion, pendientes, canceladas, confirmadas, completadas });
+          } catch (error) {
+            res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
+          }
+        };
+    
+        // Obtener todas las citas canceladas
+        exports.getCancelAppointments = async (req, res) => {
+          try {
+            const { role, id: usuarioId } = req.usuario;
+            if (!['0', '1', '2', '3'].includes(String(role))) return res.status(403).json({ msg: 'Acceso denegado' });
 
-      if (!['0', '1', '2', '3'].includes(String(role))) {
-        return res.status(403).json({ msg: 'Acceso denegado' });
-      }
+    const filter = { status: 'cancelada' };
+    if (String(role) === '1') filter.medico_id = usuarioId;
+    if (String(role) === '3') filter.paciente_id = usuarioId;
 
-      // Prepare filters per role
-      const baseFilters = {
-        pendientes: { status: 'pendiente' },
-        canceladas: { status: 'cancelada' },
-        completadas: { status: 'completada' }
-      };
+    const citas = await Appointment.find(filter)
+      .populate('paciente_id', 'username email')
+      .populate('medico_id', 'username email')
+      .sort({ fecha_hora: 1 });
 
-      // scope results: doctors see their own, patients see their own, assistants/admin see all
-      if (String(role) === '1') {
-        baseFilters.pendientes.medico_id = usuarioId;
-        baseFilters.canceladas.medico_id = usuarioId;
-        baseFilters.completadas.medico_id = usuarioId;
-      } else if (String(role) === '3') {
-        baseFilters.pendientes.paciente_id = usuarioId;
-        baseFilters.canceladas.paciente_id = usuarioId;
-        baseFilters.completadas.paciente_id = usuarioId;
-      }
-
-      const [pendientes, canceladas, completadas] = await Promise.all([
-        Appointment.find(baseFilters.pendientes)
-          .populate('paciente_id', 'username email')
-          .populate('medico_id', 'username email')
-          .sort({ fecha_hora: 1 }),
-        Appointment.find(baseFilters.canceladas)
-          .populate('paciente_id', 'username email')
-          .populate('medico_id', 'username email')
-          .sort({ fecha_hora: 1 }),
-        Appointment.find(baseFilters.completadas)
-          .populate('paciente_id', 'username email')
-          .populate('medico_id', 'username email')
-          .sort({ fecha_hora: 1 })
-      ]);
-
-      return res.status(200).json({ pendientes, canceladas, completadas });
-    } catch (error) {
-      res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
-    }
+    return res.status(200).json(citas);
+  } catch (error) {
+    res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
+  }
 };
-  // Obtener todas las citas canceladas
-  exports.getCancelAppointments = async (req, res) => {
-    try {
-      const { role, id: usuarioId } = req.usuario;
-      if (!['0', '1', '2', '3'].includes(String(role))) return res.status(403).json({ msg: 'Acceso denegado' });
 
-      const filter = { status: 'cancelada' };
-      if (String(role) === '1') filter.medico_id = usuarioId;
-      if (String(role) === '3') filter.paciente_id = usuarioId;
+// Obtener todas las citas pendientes a confirmar
+exports.getPendingAppointments = async (req, res) => {
+  try {
+    const { role, id: usuarioId } = req.usuario;
+    if (!['0', '1', '2', '3'].includes(String(role))) return res.status(403).json({ msg: 'Acceso denegado' });
 
-      const citas = await Appointment.find(filter)
+    const filter = { status: 'pendiente' };
+    if (String(role) === '1') filter.medico_id = usuarioId;
+    if (String(role) === '3') filter.paciente_id = usuarioId;
+
+    const citas = await Appointment.find(filter)
+      .populate('paciente_id', 'username email')
+      .populate('medico_id', 'username email')
+      .sort({ fecha_hora: 1 });
+
+    return res.status(200).json(citas);
+  } catch (error) {
+    res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
+  }
+};
+
+// Obtener todas las citas pendientes de cancelación (si se implementa flag `pendiente_aprobacion` se usará esa)
+exports.getPendingCancellations = async (req, res) => {
+  try {
+    const { role, id: usuarioId } = req.usuario;
+    if (!['0', '1', '2', '3'].includes(String(role))) return res.status(403).json({ msg: 'Acceso denegado' });
+
+    // Preferir la señal `pendiente_aprobacion` si existe en los documentos
+    const filterFlag = { status: 'pendiente_aprobacion' };
+    if (String(role) === '1') filterFlag.medico_id = usuarioId;
+    if (String(role) === '3') filterFlag.paciente_id = usuarioId;
+
+    let citas = await Appointment.find(filterFlag)
+      .populate('paciente_id', 'username email')
+      .populate('medico_id', 'username email')
+      .sort({ fecha_hora: 1 });
+
+    // Fallback a status 'pendiente' si no hay documentos con el flag
+    if (!citas || citas.length === 0) {
+      const fallback = { status: 'pendiente' };
+      if (String(role) === '1') fallback.medico_id = usuarioId;
+      if (String(role) === '3') fallback.paciente_id = usuarioId;
+      citas = await Appointment.find(fallback)
         .populate('paciente_id', 'username email')
         .populate('medico_id', 'username email')
         .sort({ fecha_hora: 1 });
-
-      return res.status(200).json(citas);
-    } catch (error) {
-      res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
     }
-  };
 
-  // Obtener todas las citas pendientes a confirmar
-  exports.getPendingAppointments = async (req, res) => {
-    try {
-      const { role, id: usuarioId } = req.usuario;
-      if (!['0', '1', '2', '3'].includes(String(role))) return res.status(403).json({ msg: 'Acceso denegado' });
-
-      const filter = { status: 'pendiente' };
-      if (String(role) === '1') filter.medico_id = usuarioId;
-      if (String(role) === '3') filter.paciente_id = usuarioId;
-
-      const citas = await Appointment.find(filter)
-        .populate('paciente_id', 'username email')
-        .populate('medico_id', 'username email')
-        .sort({ fecha_hora: 1 });
-
-      return res.status(200).json(citas);
-    } catch (error) {
-      res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
-    }
-  };
-
-  // Obtener todas las citas pendientes de cancelación (si se implementa flag `pendiente_aprobacion` se usará esa)
-  exports.getPendingCancellations = async (req, res) => {
-    try {
-      const { role, id: usuarioId } = req.usuario;
-      if (!['0', '1', '2', '3'].includes(String(role))) return res.status(403).json({ msg: 'Acceso denegado' });
-
-      // Preferir la señal `pendiente_aprobacion` si existe en los documentos
-      const filterFlag = { status: 'pendiente_aprobacion' };
-      if (String(role) === '1') filterFlag.medico_id = usuarioId;
-      if (String(role) === '3') filterFlag.paciente_id = usuarioId;
-
-      let citas = await Appointment.find(filterFlag)
-        .populate('paciente_id', 'username email')
-        .populate('medico_id', 'username email')
-        .sort({ fecha_hora: 1 });
-
-      // Fallback a status 'pendiente' si no hay documentos con el flag
-      if (!citas || citas.length === 0) {
-        const fallback = { status: 'pendiente' };
-        if (String(role) === '1') fallback.medico_id = usuarioId;
-        if (String(role) === '3') fallback.paciente_id = usuarioId;
-        citas = await Appointment.find(fallback)
+            return res.status(200).json(citas);
+          } catch (error) {
+            res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
+          }
+        };
+    exports.getSpecificAppointments = async (req, res) => {
+      try {
+        const { role, id: usuarioId } = req.usuario;
+        // Allow authenticated roles; filtering below will scope results for patients
+        if (!['0', '1', '2', '3'].includes(String(role))) {
+          return res.status(403).json({ msg: 'Acceso denegado' });
+        }
+    
+        const { id } = req.params; // optional appointment id
+        const { doctor_id, date } = req.query; // optional query params
+    
+        // If an appointment id is provided, return that appointment (but enforce patient restriction)
+        if (id) {
+          const cita = await Appointment.findById(id)
+            .populate('paciente_id', 'username email')
+            .populate('medico_id', 'username email');
+    
+          if (!cita) return res.status(404).json({ msg: 'Cita no encontrada' });
+    
+          if (String(role) === '3' && String(cita.paciente_id._id) !== String(usuarioId)) {
+            return res.status(403).json({ msg: 'Acceso denegado a esta cita' });
+          }
+    
+          return res.status(200).json([cita]);
+        }
+    
+        // Build filter for queries: by doctor_id and/or date
+        const filter = {};
+        if (doctor_id) {
+          // validate doctor exists
+          const medicoExiste = await Medico.findById(doctor_id);
+          if (!medicoExiste) return res.status(404).json({ msg: 'Médico no encontrado' });
+          filter.medico_id = doctor_id;
+        }
+    
+        if (date) {
+          // Accept dates like YYYY-MM-DD (server interprets as start of day UTC)
+          const dayStart = new Date(date);
+          if (isNaN(dayStart.getTime())) return res.status(400).json({ msg: 'Formato de fecha inválido' });
+          const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+          filter.fecha_hora = { $gte: dayStart, $lt: dayEnd };
+        }
+    
+        // If requestor is a patient, restrict to their own appointments
+        if (String(role) === '3') {
+          filter.paciente_id = usuarioId;
+        }
+    
+        const citas = await Appointment.find(filter)
           .populate('paciente_id', 'username email')
           .populate('medico_id', 'username email')
           .sort({ fecha_hora: 1 });
+    
+        return res.status(200).json(citas);
+      } catch (error) {
+        res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
       }
-
-      return res.status(200).json(citas);
-    } catch (error) {
-      res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
     }
-  };
-  exports.getSpecificAppointments = async (req, res) => {
-    try {
-      const { role, id: usuarioId } = req.usuario;
-      // Allow authenticated roles; filtering below will scope results for patients
-      if (!['0', '1', '2', '3'].includes(String(role))) {
-        return res.status(403).json({ msg: 'Acceso denegado' });
-      }
 
-      const { id } = req.params; // optional appointment id
-      const { doctor_id, date } = req.query; // optional query params
-
-      // If an appointment id is provided, return that appointment (but enforce patient restriction)
-      if (id) {
-        const cita = await Appointment.findById(id)
-          .populate('paciente_id', 'username email')
-          .populate('medico_id', 'username email');
-
-        if (!cita) return res.status(404).json({ msg: 'Cita no encontrada' });
-
-        if (String(role) === '3' && String(cita.paciente_id._id) !== String(usuarioId)) {
-          return res.status(403).json({ msg: 'Acceso denegado a esta cita' });
-        }
-
-        return res.status(200).json([cita]);
-      }
-
-      // Build filter for queries: by doctor_id and/or date
-      const filter = {};
-      if (doctor_id) {
-        // validate doctor exists
-        const medicoExiste = await Medico.findById(doctor_id);
-        if (!medicoExiste) return res.status(404).json({ msg: 'Médico no encontrado' });
-        filter.medico_id = doctor_id;
-      }
-
-      if (date) {
-        // Accept dates like YYYY-MM-DD (server interprets as start of day UTC)
-        const dayStart = new Date(date);
-        if (isNaN(dayStart.getTime())) return res.status(400).json({ msg: 'Formato de fecha inválido' });
-        const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
-        filter.fecha_hora = { $gte: dayStart, $lt: dayEnd };
-      }
-
-      // If requestor is a patient, restrict to their own appointments
-      if (String(role) === '3') {
-        filter.paciente_id = usuarioId;
-      }
-
-      const citas = await Appointment.find(filter)
-        .populate('paciente_id', 'username email')
-        .populate('medico_id', 'username email')
-        .sort({ fecha_hora: 1 });
-
-      return res.status(200).json(citas);
-    } catch (error) {
-      res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
-    }
-  };
