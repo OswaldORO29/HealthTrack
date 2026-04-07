@@ -258,7 +258,7 @@ router.get('/getPendingCancellations', auth, createAppointmentsController.getPen
 /**
  * @swagger
  * /api/appointments/updateAppointments/{id}:
- *   put:
+ *   patch:
  *     summary: Actualizar campos de una cita (paciente, médico, fecha, estado, motivo)
  *     tags:
  *       - Appointments

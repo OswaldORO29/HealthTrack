@@ -4,6 +4,7 @@ const Asistente = require("../models/asistente");
 const Admin = require("../models/admin");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
 exports.registerPaciente = async (req,res) => {
     try {
         const{username,email,password} =req.body;

@@ -106,8 +106,8 @@ const swaggerOptions = {
   apis: ['./src/routes/*.js'],
 };
 
-/*const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use('/api-healthTrack', swaggerUi.serve, swaggerUi.setup(swaggerDocs));*/
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api-healthTrack', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 //main routes
 
