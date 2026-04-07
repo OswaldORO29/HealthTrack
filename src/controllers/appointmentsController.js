@@ -233,6 +233,7 @@ exports.cancelAppointment = async (req, res) => {
             const baseFilters = {
               pendientes: { status: 'pendiente' },
               canceladas: { status: 'cancelada' },
+              confirmadas: { status: 'confirmada' },
               completadas: { status: 'completada' }
             };
     
@@ -240,19 +241,25 @@ exports.cancelAppointment = async (req, res) => {
             if (String(role) === '1') {
               baseFilters.pendientes.medico_id = usuarioId;
               baseFilters.canceladas.medico_id = usuarioId;
+              baseFilters.confirmadas.medico_id = usuarioId;
               baseFilters.completadas.medico_id = usuarioId;
             } else if (String(role) === '3') {
               baseFilters.pendientes.paciente_id = usuarioId;
               baseFilters.canceladas.paciente_id = usuarioId;
+              baseFilters.confirmadas.paciente_id = usuarioId;
               baseFilters.completadas.paciente_id = usuarioId;
             }
     
-            const [pendientes, canceladas, completadas] = await Promise.all([
+            const [pendientes, canceladas, confirmadas, completadas] = await Promise.all([
               Appointment.find(baseFilters.pendientes)
                 .populate('paciente_id', 'username email')
                 .populate('medico_id', 'username email')
                 .sort({ fecha_hora: 1 }),
               Appointment.find(baseFilters.canceladas)
+                .populate('paciente_id', 'username email')
+                .populate('medico_id', 'username email')
+                .sort({ fecha_hora: 1 }),
+              Appointment.find(baseFilters.confirmadas)
                 .populate('paciente_id', 'username email')
                 .populate('medico_id', 'username email')
                 .sort({ fecha_hora: 1 }),
@@ -262,7 +269,7 @@ exports.cancelAppointment = async (req, res) => {
                 .sort({ fecha_hora: 1 })
             ]);
     
-            return res.status(200).json({ pendientes, canceladas, completadas });
+            return res.status(200).json({ pendientes, canceladas, confirmadas, completadas });
           } catch (error) {
             res.status(500).json({ error: 'Error en el servidor', message: error.message || error });
           }
