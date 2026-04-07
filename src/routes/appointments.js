@@ -2,7 +2,8 @@ const express = require("express"); //permitir sacar las apis al exterior
 const router = express.Router();
 
 const auth = require("../middlewares/auth");
-const createAppointmentsController = require("../controllers/appointmentsController");
+const appointmentsController = require("../controllers/appointmentsController");
+
 
 
 /**
@@ -32,7 +33,7 @@ const createAppointmentsController = require("../controllers/appointmentsControl
  *       201:
  *         description: Cita creada correctamente
  */
-router.post("/createAppointments",auth,createAppointmentsController.createAppointments);
+router.post("/createAppointments",auth,appointmentsController.createAppointments);
 
 
 /**
@@ -64,7 +65,7 @@ router.post("/createAppointments",auth,createAppointmentsController.createAppoin
  *       200:
  *         description: Estado actualizado
  */
-router.patch("/updateAppointmentStatus/:id",auth,createAppointmentsController.updateAppointmentStatus);
+router.patch("/updateAppointmentStatus/:id",auth,appointmentsController.updateAppointmentStatus);
 
 
 /**
@@ -96,7 +97,7 @@ router.patch("/updateAppointmentStatus/:id",auth,createAppointmentsController.up
  *       200:
  *         description: Solicitud enviada
  */
-router.patch("/requestCancellation/:id",auth,createAppointmentsController.requestCancellation);
+router.patch("/requestCancellation/:id",auth,appointmentsController.requestCancellation);
 
 
 /**
@@ -118,7 +119,7 @@ router.patch("/requestCancellation/:id",auth,createAppointmentsController.reques
  *       200:
  *         description: Cita cancelada
  */
-router.patch("/cancelAppointment/:id",auth,createAppointmentsController.cancelAppointment);
+router.patch("/cancelAppointment/:id",auth,appointmentsController.cancelAppointment);
 
 
 /**
@@ -296,7 +297,7 @@ router.get('/getPendingCancellations', auth, (req, res, next) => require('../con
  *       200:
  *         description: Cita actualizada
  */
-router.put('/updateAppointments/:id', auth, createAppointmentsController.updateAppointments);
+router.put('/updateAppointments/:id', auth, appointmentsController.updateAppointments);
 
 
 module.exports = router;
